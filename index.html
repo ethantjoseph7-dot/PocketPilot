@@ -1,566 +1,124 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <meta charset ="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PocketPilot — Productivity Dashboard</title>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>PocketPilot — Personal Finance</title>
 <style>
-    :root {
-        --bg:#0a0d18; -- panel:#13192a; --border:#252d43;
-        --text: #f4f5ff; --muted:#929bb5; --purple:#a78bfa;
-        --green:#72e6b1; --blue:#75b8ff;
-
-
-    }
-    * { box-sizing:border-box; }
-body {
-  margin:0; background:var(--bg); color:var(--text);
-  font-family:Inter,"Segoe UI",Arial,sans-serif;
-}
-button,input,select { font:inherit; }
-button { cursor:pointer; }
-.layout { display:flex; min-height:100vh; }
-.sidebar {
-  width:225px; padding:26px 17px; border-right:1px solid var(--border);
-  background:#0d1120; flex-shrink:0;
-}
-.brand { font-size:23px; font-weight:850; margin:5px 7px 42px; }
-.brand span { color:var(--purple); }
-.nav-title {
-  color:var(--muted); font-size:11px; letter-spacing:2px;
-  margin:25px 10px 10px;
-}
-.nav {
-  display:block; width:100%; text-align:left; padding:12px;
-  border:0; background:transparent; color:var(--muted);
-  border-radius:10px; margin:4px 0;
-}
-.nav.active,.nav:hover { background:#22213b; color:white; }
-.sidebar-note {
-  margin-top:45px; padding:13px; background:#151b2c;
-  border:1px solid var(--border); border-radius:12px;
-  font-size:12px; color:var(--muted); line-height:1.6;
-}
-main { flex:1; min-width:0; padding:30px; max-width:1500px; }
-.topbar {
-  display:flex; justify-content:space-between; align-items:center;
-  gap:15px; flex-wrap:wrap; margin-bottom:32px;
-}
-h1 { font-size:28px; margin:0 0 8px; }
-h2 { font-size:17px; margin:0 0 20px; }
-p { line-height:1.6; }
-.muted { color:var(--muted); }
-.small { font-size:12px; }
-.status {
-  color:var(--green); background:#142c27; border-radius:30px;
-  padding:9px 13px; font-size:12px;
-}
-.grid {
-  display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:15px; margin:24px 0;
-}
-.card,.panel {
-  background:var(--panel); border:1px solid var(--border);
-  border-radius:16px; padding:21px; min-width:0;
-}
-.card-label { color:var(--muted); font-size:13px; }
-.metric { font-size:29px; font-weight:800; margin:13px 0 8px; }
-.positive { color:var(--green); font-size:12px; }
-.columns {
-  display:grid; grid-template-columns:minmax(0,1.35fr) minmax(270px,1fr);
-  gap:16px;
-}
-.panel { margin-bottom:16px; }
-.section-head {
-  display:flex; justify-content:space-between; align-items:center;
-  gap:12px; margin-bottom:18px;
-}
-.section-head h2 { margin:0; }
-.pill {
-  border:1px solid var(--border); border-radius:20px;
-  padding:6px 10px; color:var(--muted); font-size:11px;
-}
-.app-row { display:flex; gap:12px; align-items:center; margin:20px 0; }
-.app-icon {
-  width:39px; height:39px; display:grid; place-items:center;
-  border-radius:11px; background:#252541; font-size:18px; flex-shrink:0;
-}
-.app-info { flex:1; min-width:0; }
-.app-name { font-weight:650; font-size:13px; }
-.bar { height:6px; background:#293149; border-radius:10px; margin-top:9px; overflow:hidden; }
-.fill { height:100%; background:linear-gradient(90deg,#8b5cf6,#b6a1ff); border-radius:10px; }
-.app-time { font-size:12px; color:var(--muted); white-space:nowrap; }
-.btn {
-  border:0; border-radius:10px; padding:11px 15px;
-  color:white; background:#7955e8; font-weight:700;
-}
-.btn:hover { filter:brightness(1.12); }
-.btn.secondary { background:#252d43; }
-.btn.green { background:#1e624b; }
-.btn:disabled { opacity:.5; cursor:not-allowed; }
-.full { width:100%; }
-.timer {
-  font-size:53px; font-weight:800; text-align:center;
-  letter-spacing:2px; margin:22px 0;
-}
-.timer-actions { display:flex; justify-content:center; gap:10px; }
-.center { text-align:center; }
-.xp-line { display:flex; justify-content:space-between; font-size:12px; margin:17px 0 9px; }
-.xpbar { height:9px; background:#293149; border-radius:10px; overflow:hidden; }
-.xpbar .fill { background:linear-gradient(90deg,#8b5cf6,#72e6b1); }
-.goal-row { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:17px 0; font-size:13px; }
-input,select {
-  background:#0e1424; border:1px solid var(--border); color:white;
-  border-radius:9px; padding:10px; width:100%; margin:8px 0 13px;
-}
-label { color:var(--muted); font-size:12px; }
-.goal-form { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.goal-form .full-field { grid-column:1/-1; }
-.page { display:none; }
-.page.active { display:block; }
-.empty { color:var(--muted); font-size:13px; padding:12px 0; }
-footer { margin-top:20px; color:var(--muted); font-size:11px; line-height:1.7; }
-@media(max-width:1000px) {
-  .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .columns { grid-template-columns:1fr; }
-}
-@media(max-width:650px) {
-  .sidebar { width:65px; padding:15px 7px; }
-  .brand { font-size:0; margin:12px 5px 30px; }
-  .brand:first-letter { font-size:24px; }
-  .nav { text-align:center; font-size:0; padding:13px 3px; }
-  .nav::first-letter { font-size:19px; }
-  .nav-title,.sidebar-note { display:none; }
-  main { padding:19px 12px; }
-  .metric { font-size:24px; }
-  .card,.panel { padding:15px; }
-  .timer { font-size:43px; }
-}
+:root{--bg:#0b1220;--panel:#121d2e;--panel2:#172438;--line:#26364c;--text:#f3f6fc;--muted:#93a4ba;--green:#69e0b0;--blue:#8ab4ff;--red:#ff8290;--yellow:#ffd479}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top left,#172b43 0,#0b1220 42%);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:11px;padding:10px 14px;font-weight:700;background:var(--green);color:#092017}button.secondary{background:#213149;color:var(--text);border:1px solid var(--line)}button.danger{background:#442631;color:#ffd9de}.wrap{max-width:1200px;margin:auto;padding:28px 22px 50px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px}.brand{display:flex;align-items:center;gap:12px}.logo{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#69e0b0,#8ab4ff);color:#0b1725;font-size:24px;font-weight:900}.brand h1{font-size:22px;margin:0;letter-spacing:-.7px}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}.top-actions{display:flex;gap:9px;flex-wrap:wrap}.welcome{margin:0 0 20px}.eyebrow{color:var(--green);text-transform:uppercase;letter-spacing:1.7px;font-size:11px;font-weight:800}.welcome h2{font-size:clamp(25px,4vw,34px);line-height:1.15;letter-spacing:-1px;margin:6px 0}.welcome p{color:var(--muted);margin:6px 0 0}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0}.card{background:linear-gradient(150deg,rgba(23,36,56,.96),rgba(16,27,43,.96));border:1px solid var(--line);border-radius:18px;padding:19px;min-width:0;box-shadow:0 12px 30px #00000012}.metric-label{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:7px}.metric{font-size:clamp(22px,3vw,29px);font-weight:800;letter-spacing:-1px;margin:10px 0 5px;overflow-wrap:anywhere}.sub{font-size:12px;color:var(--muted)}.green{color:var(--green)}.blue{color:var(--blue)}.red{color:var(--red)}.yellow{color:var(--yellow)}.layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.9fr);gap:16px;margin-top:16px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.section-head h3{margin:0;font-size:17px;letter-spacing:-.3px}.section-head p{margin:3px 0 0;color:var(--muted);font-size:12px}.pill{font-size:11px;padding:5px 9px;border:1px solid var(--line);border-radius:99px;color:var(--muted)}.bars{height:150px;display:flex;align-items:end;gap:12px;padding:8px 4px 0;border-bottom:1px solid var(--line)}.bar-col{height:100%;flex:1;display:flex;align-items:center;justify-content:end;flex-direction:column;gap:7px;min-width:0}.bar{width:min(34px,75%);border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,var(--green),#2c9e83);min-height:3px;transition:height .2s}.bar-label{font-size:11px;color:var(--muted)}.legend{display:flex;gap:16px;margin-top:13px;color:var(--muted);font-size:12px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--green)}.dot.blue-dot{background:var(--blue)}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted);font-weight:650}.field input,.field select{width:100%;background:#0c1625;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;outline:none}.field input:focus,.field select:focus{border-color:var(--green)}.form-actions{display:flex;gap:8px;margin-top:13px}.transaction-list{display:flex;flex-direction:column;gap:2px}.transaction{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid #26364c88}.transaction:last-child{border-bottom:0}.tx-icon{width:40px;height:40px;flex-shrink:0;border-radius:13px;background:#203149;display:grid;place-items:center;font-size:17px}.tx-main{flex:1;min-width:0}.tx-main strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tx-main span{color:var(--muted);font-size:11px}.tx-amount{font-weight:800;font-size:13px;white-space:nowrap}.tx-amount.income{color:var(--green)}.tx-amount.expense{color:var(--text)}.delete{background:transparent;color:var(--muted);padding:5px 7px;font-size:16px}.delete:hover{color:var(--red)}.empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}.budget-item{margin:17px 0}.budget-line{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:7px}.budget-line span:last-child{color:var(--muted);font-size:12px}.track{height:8px;border-radius:99px;background:#26364c;overflow:hidden}.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),var(--green))}.goal-box{display:flex;align-items:center;gap:14px;margin-top:14px}.goal-ring{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;background:conic-gradient(var(--green) var(--progress,0%),#26364c 0);position:relative}.goal-ring:after{content:"";position:absolute;inset:6px;background:var(--panel);border-radius:50%}.goal-ring span{position:relative;z-index:1;font-size:12px;font-weight:800}.goal-details{flex:1;min-width:0}.goal-details strong{display:block}.goal-details p{font-size:12px;color:var(--muted);margin:3px 0}.goal-actions{display:flex;gap:8px;margin-top:14px}.small-input{max-width:130px}.footer{text-align:center;color:#667b94;font-size:12px;padding:26px 0 0}.notice{color:var(--muted);font-size:12px;margin-top:12px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}@media(max-width:520px){.wrap{padding:18px 13px 35px}.grid{gap:9px}.card{padding:15px;border-radius:15px}.metric{font-size:23px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.top-actions button{padding:9px 10px;font-size:12px}.bars{gap:5px}}
 </style>
 </head>
 <body>
-<div class="layout">
-<aside class="sidebar">
-  <div class="brand">✦ Pocket<span>Pilot</span></div>
-  <div class="nav-title">WORKSPACE</div>
-  <button class="nav active" data-page="dashboard">◈ &nbsp; Dashboard</button>
-  <button class="nav" data-page="focus">◷ &nbsp; Focus room</button>
-  <button class="nav" data-page="apps">▦ &nbsp; App usage</button>
-  <div class="nav-title">PERSONAL</div>
-  <button class="nav" data-page="goals">◎ &nbsp; Goals & limits</button>
-  <button class="nav" data-page="progress">♜ &nbsp; My progress</button>
-  <div class="sidebar-note">
-    <strong style="color:white">Your mission</strong><br>
-    Take control of your time, one session at a time.
-  </div>
-</aside>
-
-<main>
-<header class="topbar">
-  <div>
-    <h1 id="welcome">Your command center.</h1>
-    <div class="muted" id="today"></div>
-  </div>
-  <div class="status">● PocketPilot is ready</div>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><div class="logo">P</div><div><h1>PocketPilot</h1><p>Your money, with a plan.</p></div></div>
+  <div class="top-actions"><button class="secondary" id="exportBtn">↓ Export CSV</button><button id="jumpAdd">+ Add transaction</button></div>
 </header>
-
-<section class="page active" id="dashboard">
-  <div class="muted">YOUR DAILY OVERVIEW</div>
-  <div class="grid">
-    <div class="card">
-      <div class="card-label">Focus time today</div>
-      <div class="metric" id="focusMetric">0m</div>
-      <div class="positive">Time spent in focus sessions</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Sessions completed</div>
-      <div class="metric" id="sessionMetric">0</div>
-      <div class="muted small">Completed focus sessions</div>
-    </div>
-    <div class="card">
-      <div class="card-label">XP earned</div>
-      <div class="metric" id="xpMetric">0</div>
-      <div class="positive">Keep building your streak</div>
-    </div>
-    <div class="card">
-      <div class="card-label">Daily focus goal</div>
-      <div class="metric" id="goalMetric">60m</div>
-      <div class="muted small" id="goalCaption">0% completed</div>
-    </div>
-  </div>
-
-  <div class="columns">
-    <div>
-      <div class="panel">
-        <div class="section-head">
-          <h2>App usage</h2>
-          <span class="pill">DEMO DATA</span>
-        </div>
-        <div class="muted small">Example usage data. Real PC app tracking is not enabled in this browser-only version.</div>
-        <div id="appPreview"></div>
-        <button class="btn secondary full" onclick="navigate('apps')">Explore app usage →</button>
-      </div>
-      <div class="panel">
-        <div class="section-head">
-          <h2>Today's goal</h2><span>🎯</span>
-        </div>
-        <div id="goalSummary" class="muted small"></div>
-        <div class="bar" style="height:9px;margin:15px 0">
-          <div class="fill" id="goalFill" style="width:0%;height:100%"></div>
-        </div>
-        <button class="btn secondary" onclick="navigate('goals')">Manage goals</button>
-      </div>
-    </div>
-
-    <div>
-      <div class="panel center">
-        <div class="section-head"><h2>Focus room</h2><span>⚡</span></div>
-        <div class="muted small">One task. One session. Your progress.</div>
-        <div class="timer" id="timer">25:00</div>
-        <input id="task" placeholder="What are you focusing on?" aria-label="Focus task">
-        <div class="timer-actions">
-          <button class="btn" id="startBtn" onclick="startFocus()">Start focus</button>
-          <button class="btn secondary" onclick="resetFocus()">Reset</button>
-        </div>
-        <p class="muted small" id="timerMessage">Complete a session to earn 25 XP.</p>
-      </div>
-      <div class="panel">
-        <div class="section-head"><h2>Your level</h2><span>🏆</span></div>
-        <div style="font-size:22px;font-weight:800" id="levelName">Level 1</div>
-        <div class="xp-line"><span id="levelXP">0 XP</span><span id="nextXP">100 XP to next level</span></div>
-        <div class="xpbar"><div class="fill" id="levelFill" style="width:0%;height:100%"></div></div>
-      </div>
-    </div>
-  </div>
+<section class="welcome"><div class="eyebrow">PERSONAL FINANCE DASHBOARD</div><h2>Make every rupee count.</h2><p>Track your spending, stay on budget, and keep moving toward your goals.</p></section>
+<section class="grid">
+  <article class="card"><div class="metric-label">◈ Total balance</div><div class="metric" id="balance">₹0</div><div class="sub">Income minus expenses</div></article>
+  <article class="card"><div class="metric-label">↗ Total income</div><div class="metric green" id="income">₹0</div><div class="sub">All recorded income</div></article>
+  <article class="card"><div class="metric-label">↘ Total expenses</div><div class="metric red" id="expenses">₹0</div><div class="sub">All recorded spending</div></article>
+  <article class="card"><div class="metric-label">◎ Savings rate</div><div class="metric blue" id="savingsRate">0%</div><div class="sub">Income kept after spending</div></article>
 </section>
-
-<section class="page" id="focus">
-  <div class="panel center">
-    <h2>Focus room</h2>
-    <p class="muted">Choose a task, start the timer and concentrate on one thing.</p>
-    <select id="duration" aria-label="Focus duration">
-      <option value="15">15-minute focus</option>
-      <option value="25" selected>25-minute focus</option>
-      <option value="45">45-minute focus</option>
-      <option value="60">60-minute focus</option>
-    </select>
-    <input id="task2" placeholder="Your focus task" aria-label="Your focus task">
-    <div class="timer" id="timer2">25:00</div>
-    <button class="btn" onclick="startFocus()">Start focus</button>
-    <button class="btn secondary" onclick="resetFocus()">Reset</button>
-    <p class="muted small">Earn 1 XP per 5 minutes of focus, with a minimum of 5 XP per completed session.</p>
-  </div>
-  <div class="panel"><h2>Recent sessions</h2><div id="recentSessions"></div></div>
-</section>
-
-<section class="page" id="apps">
-  <div class="panel">
-    <h2>Application usage</h2>
-    <p class="muted">These are illustrative numbers, not measurements from your computer.</p>
-    <div id="allApps"></div>
-  </div>
-  <div class="panel">
-    <h2>How automatic tracking works</h2>
-    <p class="muted">Websites run inside a browser sandbox and cannot reliably inspect which other Windows applications are open. A future desktop companion will be needed for that feature.</p>
-  </div>
-</section>
-
-<section class="page" id="goals">
-  <div class="panel">
-    <h2>Daily goals & limits</h2>
-    <p class="muted">Choose your own focus target. These goals are saved in your browser.</p>
-    <label for="goalInput">Daily focus goal (minutes)</label>
-    <input id="goalInput" type="number" min="5" max="1440" value="60">
-    <label for="limitInput">Daily recreational screen-time limit (minutes)</label>
-    <input id="limitInput" type="number" min="5" max="1440" value="120">
-    <button class="btn" onclick="saveGoals()">Save goals</button>
-    <p class="muted small" id="saveMessage"></p>
-    <div class="goal-row"><span>Daily focus progress</span><strong id="goalProgress">0%</strong></div>
-    <div class="bar"><div class="fill" id="goalFill2" style="width:0%;height:100%"></div></div>
-    <p class="muted small">The recreational limit is a target only; this version cannot measure or block other apps.</p>
-  </div>
-</section>
-
-<section class="page" id="progress">
-  <div class="panel">
-    <h2>Your achievements</h2>
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-      <div class="card"><div style="font-size:26px">🚀</div><h3>First steps</h3><p class="muted small">Complete your first focus session.</p><strong id="firstBadge">Locked</strong></div>
-      <div class="card"><div style="font-size:26px">🎯</div><h3>Goal getter</h3><p class="muted small">Reach your daily focus goal.</p><strong id="goalBadge">Locked</strong></div>
-      <div class="card"><div style="font-size:26px">🔥</div><h3>XP collector</h3><p class="muted small">Earn 100 XP.</p><strong id="xpBadge">Locked</strong></div>
-    </div>
-    <h2>Lifetime stats</h2>
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
-      <div class="card"><div class="card-label">Total focus</div><div class="metric" id="lifeFocus">0m</div></div>
-      <div class="card"><div class="card-label">Total sessions</div><div class="metric" id="lifeSessions">0</div></div>
-      <div class="card"><div class="card-label">Total XP</div><div class="metric" id="lifeXP">0</div></div>
-    </div>
-  </div>
-</section>
-
-<footer>
-  PocketPilot browser edition · Your progress is stored in this browser on this device.
-  Demo application usage is not real tracking. Avoid clearing site data if you want to retain your progress.
-</footer>
-</main>
+<div class="layout">
+ <div>
+  <section class="card">
+   <div class="section-head"><div><h3>Cash flow</h3><p>Income vs expenses by month</p></div><span class="pill">Last 6 months</span></div>
+   <div class="bars" id="chart"></div><div class="legend"><span><i class="dot"></i>Income</span><span><i class="dot blue-dot"></i>Expenses</span></div>
+  </section>
+  <section class="card" style="margin-top:16px" id="addCard">
+   <div class="section-head"><div><h3>Add a transaction</h3><p>Record money coming in or going out</p></div></div>
+   <form id="txForm">
+    <div class="form-grid">
+     <div class="field"><label for="txName">Description</label><input id="txName" placeholder="e.g. Lunch, allowance" required maxlength="70"></div>
+     <div class="field"><label for="txAmount">Amount (₹)</label><input id="txAmount" type="number" min="1" step="0.01" placeholder="0.00" required></div>
+     <div class="field"><label for="txType">Type</label><select id="txType"><option value="expense">Expense</option><option value="income">Income</option></select></div>
+     <div class="field"><label for="txCategory">Category</label><select id="txCategory"><option>Food</option><option>Transport</option><option>Shopping</option><option>Education</option><option>Entertainment</option><option>Bills</option><option>Health</option><option>Allowance</option><option>Salary</option><option>Gift</option><option>Other</option></select></div>
+     <div class="field full"><label for="txDate">Date</label><input id="txDate" type="date" required></div>
+    </div><div class="form-actions"><button type="submit">Save transaction</button><button type="reset" class="secondary">Clear</button></div>
+   </form>
+   <p class="notice">Your entries are saved in this browser on this device.</p>
+  </section>
+  <section class="card" style="margin-top:16px">
+   <div class="section-head"><div><h3>Recent transactions</h3><p>Your latest money activity</p></div><button class="secondary" id="clearBtn">Clear all</button></div>
+   <div class="transaction-list" id="transactions"></div>
+  </section>
+ </div>
+ <div>
+  <section class="card">
+   <div class="section-head"><div><h3>Monthly budget</h3><p>Set a spending limit and track it</p></div><span class="pill" id="budgetPill">Not set</span></div>
+   <div class="field"><label for="budgetInput">Monthly expense limit (₹)</label><input id="budgetInput" type="number" min="1" step="1" placeholder="e.g. 5000"></div>
+   <div class="form-actions"><button id="saveBudget">Save budget</button></div>
+   <div class="budget-item"><div class="budget-line"><strong>Spent this month</strong><span id="budgetText">₹0 / ₹0</span></div><div class="track"><div class="fill" id="budgetFill" style="width:0%"></div></div></div>
+   <p class="notice" id="budgetMessage">Add a budget to start tracking your spending.</p>
+  </section>
+  <section class="card" style="margin-top:16px">
+   <div class="section-head"><div><h3>Savings goal</h3><p>Give your next goal a name</p></div></div>
+   <div class="form-grid">
+    <div class="field full"><label for="goalName">Goal name</label><input id="goalName" maxlength="45" placeholder="e.g. New headphones"></div>
+    <div class="field"><label for="goalTarget">Target (₹)</label><input id="goalTarget" type="number" min="1" step="1" placeholder="5000"></div>
+    <div class="field"><label for="goalSaved">Already saved (₹)</label><input id="goalSaved" type="number" min="0" step="1" placeholder="0"></div>
+   </div><div class="form-actions"><button id="saveGoal">Save goal</button></div>
+   <div id="goalDisplay"></div>
+  </section>
+  <section class="card" style="margin-top:16px">
+   <div class="section-head"><div><h3>Quick insights</h3><p>A snapshot of your habits</p></div></div>
+   <div class="budget-line"><span>Top spending category</span><strong id="topCategory">—</strong></div>
+   <div class="budget-line" style="margin-top:14px"><span>Transactions recorded</span><strong id="txCount">0</strong></div>
+   <div class="budget-line" style="margin-top:14px"><span>Average expense</span><strong id="avgExpense">₹0</strong></div>
+   <p class="notice">Tip: small, consistent savings can add up. Review your spending every week.</p>
+  </section>
+ </div>
 </div>
-
+<footer class="footer">PocketPilot · Personal finance, made clearer. · Demo data stays in your browser.</footer>
+</div>
 <script>
-const KEY = "pocketpilot-v1";
-
-function freshState() {
-  return {
-    date: new Date().toLocaleDateString("en-CA"),
-    focusSeconds: 0, sessions: 0, xp: 0, goal: 60, limit: 120,
-    lifetimeSeconds: 0, lifetimeSessions: 0, lifetimeXP: 0,
-    history: []
-  };
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(n||0);
+const today=new Date();$('txDate').value=today.toISOString().slice(0,10);
+let transactions=[],budget=0,goal=null;
+try{transactions=JSON.parse(localStorage.getItem('pocketpilot_transactions')||'[]');budget=Number(localStorage.getItem('pocketpilot_budget')||0);goal=JSON.parse(localStorage.getItem('pocketpilot_goal')||'null')}catch(e){}
+function persist(){localStorage.setItem('pocketpilot_transactions',JSON.stringify(transactions));localStorage.setItem('pocketpilot_budget',String(budget));localStorage.setItem('pocketpilot_goal',JSON.stringify(goal))}
+function totals(list){return list.reduce((a,t)=>{a[t.type]+=Number(t.amount);return a},{income:0,expense:0})}
+function monthKey(date){return date.slice(0,7)}
+function render(){
+ const all=totals(transactions),balance=all.income-all.expense;
+ $('balance').textContent=money(balance);$('income').textContent=money(all.income);$('expenses').textContent=money(all.expense);
+ $('savingsRate').textContent=(all.income?Math.round(balance/all.income*100):0)+'%';
+ const now=monthKey(today.toISOString().slice(0,10)),monthTx=transactions.filter(t=>monthKey(t.date)===now),mt=totals(monthTx),spent=mt.expense;
+ $('budgetPill').textContent=budget?Math.round(spent/budget*100)+'% used':'Not set';$('budgetText').textContent=money(spent)+' / '+money(budget);
+ $('budgetFill').style.width=(budget?Math.min(100,spent/budget*100):0)+'%';$('budgetFill').style.background=budget&&spent>budget?'var(--red)':'linear-gradient(90deg,var(--blue),var(--green))';
+ $('budgetMessage').textContent=!budget?'Add a budget to start tracking your spending.':spent>budget?'You are over budget by '+money(spent-budget)+'. Review your spending.':'You have '+money(budget-spent)+' left in this month’s budget.';
+ const recent=[...transactions].sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created).slice(0,8);
+ $('transactions').innerHTML=recent.length?recent.map(t=>'<div class="transaction"><div class="tx-icon">'+(t.type==='income'?'↗':({'Food':'🍲','Transport':'🚌','Shopping':'🛍️','Education':'📚','Entertainment':'🎮','Bills':'🧾','Health':'✚','Allowance':'💵','Salary':'💼','Gift':'🎁'}[t.category]||'↘'))+'</div><div class="tx-main"><strong>'+esc(t.name)+'</strong><span>'+esc(t.category)+' · '+esc(t.date)+'</span></div><div class="tx-amount '+t.type+'">'+(t.type==='income'?'+':'−')+money(t.amount)+'</div><button class="delete" data-delete="'+t.id+'" aria-label="Delete transaction">×</button></div>').join(''):'<div class="empty">No transactions yet. Add your first one above.</div>';
+ $('txCount').textContent=transactions.length;$('avgExpense').textContent=money(transactions.filter(t=>t.type==='expense').length?all.expense/transactions.filter(t=>t.type==='expense').length:0);
+ const cats={};transactions.filter(t=>t.type==='expense').forEach(t=>cats[t.category]=(cats[t.category]||0)+Number(t.amount));const top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];$('topCategory').textContent=top?top[0]+' · '+money(top[1]):'—';
+ renderChart();renderGoal();
 }
-
-function loadState() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(KEY));
-    return saved && typeof saved === "object"
-      ? { ...freshState(), ...saved } : freshState();
-  } catch {
-    return freshState();
-  }
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderChart(){
+ const months=[];for(let i=5;i>=0;i--){const d=new Date(today.getFullYear(),today.getMonth()-i,1);months.push({key:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),label:d.toLocaleString('en',{month:'short'})})}
+ const values=months.map(m=>{const x=totals(transactions.filter(t=>monthKey(t.date)===m.key));return {...m,...x}});const max=Math.max(1,...values.flatMap(v=>[v.income,v.expense]));
+ $('chart').innerHTML=values.map(v=>'<div class="bar-col" title="'+v.label+': income '+money(v.income)+', expenses '+money(v.expense)+'"><div style="display:flex;align-items:end;gap:3px;height:100%;width:100%;justify-content:center"><div class="bar" style="height:'+Math.max(v.income?3:0,v.income/max*100)+'%;background:linear-gradient(180deg,var(--green),#2c9e83)"></div><div class="bar" style="height:'+Math.max(v.expense?3:0,v.expense/max*100)+'%;background:linear-gradient(180deg,var(--blue),#557dc1)"></div></div><span class="bar-label">'+v.label+'</span></div>').join('');
 }
-
-let state = loadState();
-
-function save() {
-  localStorage.setItem(KEY, JSON.stringify(state));
+function renderGoal(){
+ if(!goal){$('goalDisplay').innerHTML='<div class="empty">Set a goal to see your progress here.</div>';return}
+ const pct=Math.min(100,Math.round(goal.saved/goal.target*100));$('goalDisplay').innerHTML='<div class="goal-box"><div class="goal-ring" style="--progress:'+pct+'%"><span>'+pct+'%</span></div><div class="goal-details"><strong>'+esc(goal.name)+'</strong><p>'+money(goal.saved)+' saved of '+money(goal.target)+'</p><p>'+money(Math.max(0,goal.target-goal.saved))+' to go</p></div></div><div class="goal-actions"><input class="field small-input" id="addSavings" type="number" min="1" placeholder="Add ₹" aria-label="Amount to add to savings"><button id="addSavingsBtn">Add savings</button><button class="secondary" id="removeGoal">Remove</button></div>';
 }
-
-function checkDay() {
-  const today = new Date().toLocaleDateString("en-CA");
-  if (state.date !== today) {
-    state.date = today;
-    state.focusSeconds = 0;
-    state.sessions = 0;
-    save();
-  }
-}
-
-function formatTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  return hours ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
-}
-
-function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, c => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;",
-    '"':"&quot;", "'":"&#39;"
-  })[c]);
-}
-
-const demoApps = [
-  { name:"Chrome", icon:"🌐", minutes:74 },
-  { name:"Visual Studio Code", icon:"💻", minutes:58 },
-  { name:"Spotify", icon:"🎧", minutes:32 },
-  { name:"Minecraft", icon:"🎮", minutes:45 }
-];
-
-function renderApps(target) {
-  const max = Math.max(...demoApps.map(a => a.minutes));
-  document.getElementById(target).innerHTML = demoApps.map(a => `
-    <div class="app-row">
-      <div class="app-icon">${a.icon}</div>
-      <div class="app-info">
-        <div class="app-name">${a.name}</div>
-        <div class="bar"><div class="fill" style="width:${a.minutes/max*100}%"></div></div>
-      </div>
-      <div class="app-time">${a.minutes}m</div>
-    </div>`).join("");
-}
-
-let remaining = 25 * 60;
-let running = false;
-let timerHandle = null;
-let sessionStartedAt = null;
-let taskName = "";
-
-function selectedDuration() {
-  return Number(document.getElementById("duration")?.value || 25);
-}
-
-function updateTimer() {
-  const m = String(Math.floor(remaining / 60)).padStart(2,"0");
-  const s = String(remaining % 60).padStart(2,"0");
-  document.getElementById("timer").textContent = `${m}:${s}`;
-  document.getElementById("timer2").textContent = `${m}:${s}`;
-  document.getElementById("startBtn").textContent = running ? "Pause focus" : "Start focus";
-  document.title = running ? `${m}:${s} — PocketPilot` : "PocketPilot — Productivity Dashboard";
-}
-
-function startFocus() {
-  if (running) {
-    running = false;
-    clearInterval(timerHandle);
-    timerHandle = null;
-    updateTimer();
-    return;
-  }
-
-  if (remaining <= 0) remaining = selectedDuration() * 60;
-
-  taskName = document.getElementById("task").value.trim()
-    || document.getElementById("task2").value.trim()
-    || "Focus session";
-
-  document.getElementById("timerMessage").textContent = `Working on: ${taskName}`;
-  running = true;
-  if (!sessionStartedAt) sessionStartedAt = Date.now();
-
-  timerHandle = setInterval(() => {
-    checkDay();
-    remaining--;
-    updateTimer();
-
-    if (remaining <= 0) {
-      clearInterval(timerHandle);
-      timerHandle = null;
-      running = false;
-      completeSession();
-    }
-  }, 1000);
-
-  updateTimer();
-}
-
-function resetFocus() {
-  running = false;
-  clearInterval(timerHandle);
-  timerHandle = null;
-  sessionStartedAt = null;
-  remaining = selectedDuration() * 60;
-  document.getElementById("timerMessage").textContent = "Timer reset. Ready when you are.";
-  updateTimer();
-}
-
-function completeSession() {
-  const minutes = Math.ceil((Date.now() - (sessionStartedAt || Date.now())) / 60000);
-  const earned = Math.max(5, Math.floor(minutes / 5));
-  const duration = selectedDuration() * 60;
-
-  state.focusSeconds += duration;
-  state.lifetimeSeconds += duration;
-  state.sessions++;
-  state.lifetimeSessions++;
-  state.xp += earned;
-  state.lifetimeXP += earned;
-
-  state.history.unshift({
-    task: taskName, minutes: Math.round(duration / 60),
-    xp: earned, at: new Date().toLocaleString()
-  });
-  state.history = state.history.slice(0,20);
-
-  remaining = selectedDuration() * 60;
-  sessionStartedAt = null;
-  save();
-  render();
-  document.getElementById("timerMessage").textContent =
-    `Session complete! +${earned} XP earned. Take a short break.`;
-  updateTimer();
-  alert(`Focus session complete! You earned ${earned} XP.`);
-}
-
-function saveGoals() {
-  const goal = Number(document.getElementById("goalInput").value);
-  const limit = Number(document.getElementById("limitInput").value);
-
-  if (!Number.isInteger(goal) || goal < 5 || goal > 1440 ||
-      !Number.isInteger(limit) || limit < 5 || limit > 1440) {
-    document.getElementById("saveMessage").textContent =
-      "Enter whole numbers between 5 and 1440 minutes.";
-    return;
-  }
-
-  state.goal = goal;
-  state.limit = limit;
-  save();
-  render();
-  document.getElementById("saveMessage").textContent = "Goals saved successfully!";
-}
-
-function navigate(page) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(page).classList.add("active");
-  document.querySelectorAll(".nav").forEach(b =>
-    b.classList.toggle("active", b.dataset.page === page));
-  window.scrollTo({ top:0, behavior:"smooth" });
-}
-
-document.querySelectorAll(".nav").forEach(button =>
-  button.addEventListener("click", () => navigate(button.dataset.page)));
-
-document.getElementById("duration").addEventListener("change", () => {
-  if (!running) {
-    remaining = selectedDuration() * 60;
-    updateTimer();
-  }
-});
-
-function render() {
-  checkDay();
-  const minutes = Math.floor(state.focusSeconds / 60);
-  const goalPercent = Math.min(100, minutes / state.goal * 100);
-  const level = Math.floor(state.xp / 100) + 1;
-  const levelXP = state.xp % 100;
-
-  document.getElementById("today").textContent =
-    new Date().toLocaleDateString(undefined, {
-      weekday:"long", month:"long", day:"numeric", year:"numeric"
-    });
-
-  document.getElementById("focusMetric").textContent = formatTime(state.focusSeconds);
-  document.getElementById("sessionMetric").textContent = state.sessions;
-  document.getElementById("xpMetric").textContent = state.xp;
-  document.getElementById("goalMetric").textContent = `${state.goal}m`;
-  document.getElementById("goalCaption").textContent = `${Math.round(goalPercent)}% completed`;
-  document.getElementById("goalSummary").textContent =
-    `${minutes} of ${state.goal} focus minutes completed today`;
-  document.getElementById("goalFill").style.width = goalPercent + "%";
-  document.getElementById("goalFill2").style.width = goalPercent + "%";
-  document.getElementById("goalProgress").textContent = `${Math.round(goalPercent)}%`;
-
-  document.getElementById("levelName").textContent = `Level ${level}`;
-  document.getElementById("levelXP").textContent = `${levelXP} / 100 XP`;
-  document.getElementById("nextXP").textContent = `${100-levelXP} XP to next level`;
-  document.getElementById("levelFill").style.width = levelXP + "%";
-
-  document.getElementById("goalInput").value = state.goal;
-  document.getElementById("limitInput").value = state.limit;
-
-  document.getElementById("firstBadge").textContent = state.lifetimeSessions >= 1 ? "Unlocked ✓" : "Locked";
-  document.getElementById("goalBadge").textContent = minutes >= state.goal ? "Unlocked ✓" : "Locked";
-  document.getElementById("xpBadge").textContent = state.lifetimeXP >= 100 ? "Unlocked ✓" : "Locked";
-
-  document.getElementById("lifeFocus").textContent = formatTime(state.lifetimeSeconds);
-  document.getElementById("lifeSessions").textContent = state.lifetimeSessions;
-  document.getElementById("lifeXP").textContent = state.lifetimeXP;
-
-  const history = state.history.length
-    ? state.history.map(h => `<div class="goal-row">
-        <span><strong>${escapeHTML(h.task)}</strong><br>
-        <span class="muted small">${escapeHTML(h.at)} · ${h.minutes}m</span></span>
-        <strong>+${h.xp} XP</strong>
-      </div>`).join("")
-    : '<div class="empty">No completed sessions yet. Start your first one!</div>';
-
-  document.getElementById("recentSessions").innerHTML = history;
-}
-
-renderApps("appPreview");
-renderApps("allApps");
+$('txForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('txAmount').value);if(!Number.isFinite(amount)||amount<=0)return;transactions.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),name:$('txName').value.trim(),amount,type:$('txType').value,category:$('txCategory').value,date:$('txDate').value,created:Date.now()});persist();render();$('txForm').reset();$('txDate').value=today.toISOString().slice(0,10);$('txName').focus()});
+$('transactions').addEventListener('click',e=>{const b=e.target.closest('[data-delete]');if(b){transactions=transactions.filter(t=>t.id!==b.dataset.delete);persist();render()}});
+$('saveBudget').addEventListener('click',()=>{const n=Number($('budgetInput').value);if(n>0){budget=n;persist();render()}else alert('Enter a budget greater than zero.')});
+$('budgetInput').value=budget||'';
+$('saveGoal').addEventListener('click',()=>{const name=$('goalName').value.trim(),target=Number($('goalTarget').value),saved=Number($('goalSaved').value||0);if(!name||target<=0||saved<0){alert('Enter a goal name, a target greater than zero, and a valid saved amount.');return}goal={name,target,saved};persist();render()});
+$('goalDisplay').addEventListener('click',e=>{if(e.target.id==='addSavingsBtn'){const n=Number($('addSavings').value);if(n>0){goal.saved+=n;persist();render()}}if(e.target.id==='removeGoal'){goal=null;persist();render()}});
+$('exportBtn').addEventListener('click',()=>{if(!transactions.length){alert('Add a transaction before exporting.');return}const rows=[['Description','Amount INR','Type','Category','Date'],...transactions.map(t=>[t.name,t.amount,t.type,t.category,t.date])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='pocketpilot-transactions.csv';a.click();URL.revokeObjectURL(a.href)});
+$('clearBtn').addEventListener('click',()=>{if(transactions.length&&confirm('Delete all transactions? This cannot be undone.')){transactions=[];persist();render()}});
+$('jumpAdd').addEventListener('click',()=>{$('addCard').scrollIntoView({behavior:'smooth',block:'start'});$('txName').focus()});
 render();
-updateTimer();
 </script>
 </body>
-</style>
-        </meta>
-    </head>
 </html>
