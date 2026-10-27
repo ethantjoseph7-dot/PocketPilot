@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset ="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PocketPilot — Productivity Dashboard</title>
+<style>
+    :root {
+        --bg:#0a0d18; -- panel:#13192a; --border:#252d43;
+        --text: #f4f5ff; --muted:#929bb5; --purple:#a78bfa;
+        --green:#72e6b1; --blue:#75b8ff;
+
+
+    }
+    * { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:Inter,"Segoe UI",Arial,sans-serif;
+}
+button,input,select { font:inherit; }
+button { cursor:pointer; }
+.layout { display:flex; min-height:100vh; }
+.sidebar {
+  width:225px; padding:26px 17px; border-right:1px solid var(--border);
+  background:#0d1120; flex-shrink:0;
+}
+.brand { font-size:23px; font-weight:850; margin:5px 7px 42px; }
+.brand span { color:var(--purple); }
+.nav-title {
+  color:var(--muted); font-size:11px; letter-spacing:2px;
+  margin:25px 10px 10px;
+}
+.nav {
+  display:block; width:100%; text-align:left; padding:12px;
+  border:0; background:transparent; color:var(--muted);
+  border-radius:10px; margin:4px 0;
+}
+.nav.active,.nav:hover { background:#22213b; color:white; }
+.sidebar-note {
+  margin-top:45px; padding:13px; background:#151b2c;
+  border:1px solid var(--border); border-radius:12px;
+  font-size:12px; color:var(--muted); line-height:1.6;
+}
+main { flex:1; min-width:0; padding:30px; max-width:1500px; }
+.topbar {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:15px; flex-wrap:wrap; margin-bottom:32px;
+}
+h1 { font-size:28px; margin:0 0 8px; }
+h2 { font-size:17px; margin:0 0 20px; }
+p { line-height:1.6; }
+.muted { color:var(--muted); }
+.small { font-size:12px; }
+.status {
+  color:var(--green); background:#142c27; border-radius:30px;
+  padding:9px 13px; font-size:12px;
+}
+.grid {
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:15px; margin:24px 0;
+}
+.card,.panel {
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:16px; padding:21px; min-width:0;
+}
+.card-label { color:var(--muted); font-size:13px; }
+.metric { font-size:29px; font-weight:800; margin:13px 0 8px; }
+.positive { color:var(--green); font-size:12px; }
+.columns {
+  display:grid; grid-template-columns:minmax(0,1.35fr) minmax(270px,1fr);
+  gap:16px;
+}
+.panel { margin-bottom:16px; }
+.section-head {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:12px; margin-bottom:18px;
+}
+.section-head h2 { margin:0; }
+.pill {
+  border:1px solid var(--border); border-radius:20px;
+  padding:6px 10px; color:var(--muted); font-size:11px;
+}
+.app-row { display:flex; gap:12px; align-items:center; margin:20px 0; }
+.app-icon {
+  width:39px; height:39px; display:grid; place-items:center;
+  border-radius:11px; background:#252541; font-size:18px; flex-shrink:0;
+}
+.app-info { flex:1; min-width:0; }
+.app-name { font-weight:650; font-size:13px; }
+.bar { height:6px; background:#293149; border-radius:10px; margin-top:9px; overflow:hidden; }
+.fill { height:100%; background:linear-gradient(90deg,#8b5cf6,#b6a1ff); border-radius:10px; }
+.app-time { font-size:12px; color:var(--muted); white-space:nowrap; }
+.btn {
+  border:0; border-radius:10px; padding:11px 15px;
+  color:white; background:#7955e8; font-weight:700;
+}
+.btn:hover { filter:brightness(1.12); }
+.btn.secondary { background:#252d43; }
+.btn.green { background:#1e624b; }
+.btn:disabled { opacity:.5; cursor:not-allowed; }
+.full { width:100%; }
+.timer {
+  font-size:53px; font-weight:800; text-align:center;
+  letter-spacing:2px; margin:22px 0;
+}
+.timer-actions { display:flex; justify-content:center; gap:10px; }
+.center { text-align:center; }
+.xp-line { display:flex; justify-content:space-between; font-size:12px; margin:17px 0 9px; }
+.xpbar { height:9px; background:#293149; border-radius:10px; overflow:hidden; }
+.xpbar .fill { background:linear-gradient(90deg,#8b5cf6,#72e6b1); }
+.goal-row { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:17px 0; font-size:13px; }
+input,select {
+  background:#0e1424; border:1px solid var(--border); color:white;
+  border-radius:9px; padding:10px; width:100%; margin:8px 0 13px;
+}
+label { color:var(--muted); font-size:12px; }
+.goal-form { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.goal-form .full-field { grid-column:1/-1; }
+.page { display:none; }
+.page.active { display:block; }
+.empty { color:var(--muted); font-size:13px; padding:12px 0; }
+footer { margin-top:20px; color:var(--muted); font-size:11px; line-height:1.7; }
+@media(max-width:1000px) {
+  .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .columns { grid-template-columns:1fr; }
+}
+@media(max-width:650px) {
+  .sidebar { width:65px; padding:15px 7px; }
+  .brand { font-size:0; margin:12px 5px 30px; }
+  .brand:first-letter { font-size:24px; }
+  .nav { text-align:center; font-size:0; padding:13px 3px; }
+  .nav::first-letter { font-size:19px; }
+  .nav-title,.sidebar-note { display:none; }
+  main { padding:19px 12px; }
+  .metric { font-size:24px; }
+  .card,.panel { padding:15px; }
+  .timer { font-size:43px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">✦ Pocket<span>Pilot</span></div>
+  <div class="nav-title">WORKSPACE</div>
+  <button class="nav active" data-page="dashboard">◈ &nbsp; Dashboard</button>
+  <button class="nav" data-page="focus">◷ &nbsp; Focus room</button>
+  <button class="nav" data-page="apps">▦ &nbsp; App usage</button>
+  <div class="nav-title">PERSONAL</div>
+  <button class="nav" data-page="goals">◎ &nbsp; Goals & limits</button>
+  <button class="nav" data-page="progress">♜ &nbsp; My progress</button>
+  <div class="sidebar-note">
+    <strong style="color:white">Your mission</strong><br>
+    Take control of your time, one session at a time.
+  </div>
+</aside>
+
+<main>
+<header class="topbar">
+  <div>
+    <h1 id="welcome">Your command center.</h1>
+    <div class="muted" id="today"></div>
+  </div>
+  <div class="status">● PocketPilot is ready</div>
+</header>
+
+<section class="page active" id="dashboard">
+  <div class="muted">YOUR DAILY OVERVIEW</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-label">Focus time today</div>
+      <div class="metric" id="focusMetric">0m</div>
+      <div class="positive">Time spent in focus sessions</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Sessions completed</div>
+      <div class="metric" id="sessionMetric">0</div>
+      <div class="muted small">Completed focus sessions</div>
+    </div>
+    <div class="card">
+      <div class="card-label">XP earned</div>
+      <div class="metric" id="xpMetric">0</div>
+      <div class="positive">Keep building your streak</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Daily focus goal</div>
+      <div class="metric" id="goalMetric">60m</div>
+      <div class="muted small" id="goalCaption">0% completed</div>
+    </div>
+  </div>
+
+  <div class="columns">
+    <div>
+      <div class="panel">
+        <div class="section-head">
+          <h2>App usage</h2>
+          <span class="pill">DEMO DATA</span>
+        </div>
+        <div class="muted small">Example usage data. Real PC app tracking is not enabled in this browser-only version.</div>
+        <div id="appPreview"></div>
+        <button class="btn secondary full" onclick="navigate('apps')">Explore app usage →</button>
+      </div>
+      <div class="panel">
+        <div class="section-head">
+          <h2>Today's goal</h2><span>🎯</span>
+        </div>
+        <div id="goalSummary" class="muted small"></div>
+        <div class="bar" style="height:9px;margin:15px 0">
+          <div class="fill" id="goalFill" style="width:0%;height:100%"></div>
+        </div>
+        <button class="btn secondary" onclick="navigate('goals')">Manage goals</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel center">
+        <div class="section-head"><h2>Focus room</h2><span>⚡</span></div>
+        <div class="muted small">One task. One session. Your progress.</div>
+        <div class="timer" id="timer">25:00</div>
+        <input id="task" placeholder="What are you focusing on?" aria-label="Focus task">
+        <div class="timer-actions">
+          <button class="btn" id="startBtn" onclick="startFocus()">Start focus</button>
+          <button class="btn secondary" onclick="resetFocus()">Reset</button>
+        </div>
+        <p class="muted small" id="timerMessage">Complete a session to earn 25 XP.</p>
+      </div>
+      <div class="panel">
+        <div class="section-head"><h2>Your level</h2><span>🏆</span></div>
+        <div style="font-size:22px;font-weight:800" id="levelName">Level 1</div>
+        <div class="xp-line"><span id="levelXP">0 XP</span><span id="nextXP">100 XP to next level</span></div>
+        <div class="xpbar"><div class="fill" id="levelFill" style="width:0%;height:100%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="focus">
+  <div class="panel center">
+    <h2>Focus room</h2>
+    <p class="muted">Choose a task, start the timer and concentrate on one thing.</p>
+    <select id="duration" aria-label="Focus duration">
+      <option value="15">15-minute focus</option>
+      <option value="25" selected>25-minute focus</option>
+      <option value="45">45-minute focus</option>
+      <option value="60">60-minute focus</option>
+    </select>
+    <input id="task2" placeholder="Your focus task" aria-label="Your focus task">
+    <div class="timer" id="timer2">25:00</div>
+    <button class="btn" onclick="startFocus()">Start focus</button>
+    <button class="btn secondary" onclick="resetFocus()">Reset</button>
+    <p class="muted small">Earn 1 XP per 5 minutes of focus, with a minimum of 5 XP per completed session.</p>
+  </div>
+  <div class="panel"><h2>Recent sessions</h2><div id="recentSessions"></div></div>
+</section>
+
+<section class="page" id="apps">
+  <div class="panel">
+    <h2>Application usage</h2>
+    <p class="muted">These are illustrative numbers, not measurements from your computer.</p>
+    <div id="allApps"></div>
+  </div>
+  <div class="panel">
+    <h2>How automatic tracking works</h2>
+    <p class="muted">Websites run inside a browser sandbox and cannot reliably inspect which other Windows applications are open. A future desktop companion will be needed for that feature.</p>
+  </div>
+</section>
+
+<section class="page" id="goals">
+  <div class="panel">
+    <h2>Daily goals & limits</h2>
+    <p class="muted">Choose your own focus target. These goals are saved in your browser.</p>
+    <label for="goalInput">Daily focus goal (minutes)</label>
+    <input id="goalInput" type="number" min="5" max="1440" value="60">
+    <label for="limitInput">Daily recreational screen-time limit (minutes)</label>
+    <input id="limitInput" type="number" min="5" max="1440" value="120">
+    <button class="btn" onclick="saveGoals()">Save goals</button>
+    <p class="muted small" id="saveMessage"></p>
+    <div class="goal-row"><span>Daily focus progress</span><strong id="goalProgress">0%</strong></div>
+    <div class="bar"><div class="fill" id="goalFill2" style="width:0%;height:100%"></div></div>
+    <p class="muted small">The recreational limit is a target only; this version cannot measure or block other apps.</p>
+  </div>
+</section>
+
+<section class="page" id="progress">
+  <div class="panel">
+    <h2>Your achievements</h2>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="card"><div style="font-size:26px">🚀</div><h3>First steps</h3><p class="muted small">Complete your first focus session.</p><strong id="firstBadge">Locked</strong></div>
+      <div class="card"><div style="font-size:26px">🎯</div><h3>Goal getter</h3><p class="muted small">Reach your daily focus goal.</p><strong id="goalBadge">Locked</strong></div>
+      <div class="card"><div style="font-size:26px">🔥</div><h3>XP collector</h3><p class="muted small">Earn 100 XP.</p><strong id="xpBadge">Locked</strong></div>
+    </div>
+    <h2>Lifetime stats</h2>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="card"><div class="card-label">Total focus</div><div class="metric" id="lifeFocus">0m</div></div>
+      <div class="card"><div class="card-label">Total sessions</div><div class="metric" id="lifeSessions">0</div></div>
+      <div class="card"><div class="card-label">Total XP</div><div class="metric" id="lifeXP">0</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  PocketPilot browser edition · Your progress is stored in this browser on this device.
+  Demo application usage is not real tracking. Avoid clearing site data if you want to retain your progress.
+</footer>
+</main>
+</div>
+
+<script>
+const KEY = "pocketpilot-v1";
+
+function freshState() {
+  return {
+    date: new Date().toLocaleDateString("en-CA"),
+    focusSeconds: 0, sessions: 0, xp: 0, goal: 60, limit: 120,
+    lifetimeSeconds: 0, lifetimeSessions: 0, lifetimeXP: 0,
+    history: []
+  };
+}
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    return saved && typeof saved === "object"
+      ? { ...freshState(), ...saved } : freshState();
+  } catch {
+    return freshState();
+  }
+}
+
+let state = loadState();
+
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(state));
+}
+
+function checkDay() {
+  const today = new Date().toLocaleDateString("en-CA");
+  if (state.date !== today) {
+    state.date = today;
+    state.focusSeconds = 0;
+    state.sessions = 0;
+    save();
+  }
+}
+
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  return hours ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;",
+    '"':"&quot;", "'":"&#39;"
+  })[c]);
+}
+
+const demoApps = [
+  { name:"Chrome", icon:"🌐", minutes:74 },
+  { name:"Visual Studio Code", icon:"💻", minutes:58 },
+  { name:"Spotify", icon:"🎧", minutes:32 },
+  { name:"Minecraft", icon:"🎮", minutes:45 }
+];
+
+function renderApps(target) {
+  const max = Math.max(...demoApps.map(a => a.minutes));
+  document.getElementById(target).innerHTML = demoApps.map(a => `
+    <div class="app-row">
+      <div class="app-icon">${a.icon}</div>
+      <div class="app-info">
+        <div class="app-name">${a.name}</div>
+        <div class="bar"><div class="fill" style="width:${a.minutes/max*100}%"></div></div>
+      </div>
+      <div class="app-time">${a.minutes}m</div>
+    </div>`).join("");
+}
+
+let remaining = 25 * 60;
+let running = false;
+let timerHandle = null;
+let sessionStartedAt = null;
+let taskName = "";
+
+function selectedDuration() {
+  return Number(document.getElementById("duration")?.value || 25);
+}
+
+function updateTimer() {
+  const m = String(Math.floor(remaining / 60)).padStart(2,"0");
+  const s = String(remaining % 60).padStart(2,"0");
+  document.getElementById("timer").textContent = `${m}:${s}`;
+  document.getElementById("timer2").textContent = `${m}:${s}`;
+  document.getElementById("startBtn").textContent = running ? "Pause focus" : "Start focus";
+  document.title = running ? `${m}:${s} — PocketPilot` : "PocketPilot — Productivity Dashboard";
+}
+
+function startFocus() {
+  if (running) {
+    running = false;
+    clearInterval(timerHandle);
+    timerHandle = null;
+    updateTimer();
+    return;
+  }
+
+  if (remaining <= 0) remaining = selectedDuration() * 60;
+
+  taskName = document.getElementById("task").value.trim()
+    || document.getElementById("task2").value.trim()
+    || "Focus session";
+
+  document.getElementById("timerMessage").textContent = `Working on: ${taskName}`;
+  running = true;
+  if (!sessionStartedAt) sessionStartedAt = Date.now();
+
+  timerHandle = setInterval(() => {
+    checkDay();
+    remaining--;
+    updateTimer();
+
+    if (remaining <= 0) {
+      clearInterval(timerHandle);
+      timerHandle = null;
+      running = false;
+      completeSession();
+    }
+  }, 1000);
+
+  updateTimer();
+}
+
+function resetFocus() {
+  running = false;
+  clearInterval(timerHandle);
+  timerHandle = null;
+  sessionStartedAt = null;
+  remaining = selectedDuration() * 60;
+  document.getElementById("timerMessage").textContent = "Timer reset. Ready when you are.";
+  updateTimer();
+}
+
+function completeSession() {
+  const minutes = Math.ceil((Date.now() - (sessionStartedAt || Date.now())) / 60000);
+  const earned = Math.max(5, Math.floor(minutes / 5));
+  const duration = selectedDuration() * 60;
+
+  state.focusSeconds += duration;
+  state.lifetimeSeconds += duration;
+  state.sessions++;
+  state.lifetimeSessions++;
+  state.xp += earned;
+  state.lifetimeXP += earned;
+
+  state.history.unshift({
+    task: taskName, minutes: Math.round(duration / 60),
+    xp: earned, at: new Date().toLocaleString()
+  });
+  state.history = state.history.slice(0,20);
+
+  remaining = selectedDuration() * 60;
+  sessionStartedAt = null;
+  save();
+  render();
+  document.getElementById("timerMessage").textContent =
+    `Session complete! +${earned} XP earned. Take a short break.`;
+  updateTimer();
+  alert(`Focus session complete! You earned ${earned} XP.`);
+}
+
+function saveGoals() {
+  const goal = Number(document.getElementById("goalInput").value);
+  const limit = Number(document.getElementById("limitInput").value);
+
+  if (!Number.isInteger(goal) || goal < 5 || goal > 1440 ||
+      !Number.isInteger(limit) || limit < 5 || limit > 1440) {
+    document.getElementById("saveMessage").textContent =
+      "Enter whole numbers between 5 and 1440 minutes.";
+    return;
+  }
+
+  state.goal = goal;
+  state.limit = limit;
+  save();
+  render();
+  document.getElementById("saveMessage").textContent = "Goals saved successfully!";
+}
+
+function navigate(page) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(page).classList.add("active");
+  document.querySelectorAll(".nav").forEach(b =>
+    b.classList.toggle("active", b.dataset.page === page));
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+
+document.querySelectorAll(".nav").forEach(button =>
+  button.addEventListener("click", () => navigate(button.dataset.page)));
+
+document.getElementById("duration").addEventListener("change", () => {
+  if (!running) {
+    remaining = selectedDuration() * 60;
+    updateTimer();
+  }
+});
+
+function render() {
+  checkDay();
+  const minutes = Math.floor(state.focusSeconds / 60);
+  const goalPercent = Math.min(100, minutes / state.goal * 100);
+  const level = Math.floor(state.xp / 100) + 1;
+  const levelXP = state.xp % 100;
+
+  document.getElementById("today").textContent =
+    new Date().toLocaleDateString(undefined, {
+      weekday:"long", month:"long", day:"numeric", year:"numeric"
+    });
+
+  document.getElementById("focusMetric").textContent = formatTime(state.focusSeconds);
+  document.getElementById("sessionMetric").textContent = state.sessions;
+  document.getElementById("xpMetric").textContent = state.xp;
+  document.getElementById("goalMetric").textContent = `${state.goal}m`;
+  document.getElementById("goalCaption").textContent = `${Math.round(goalPercent)}% completed`;
+  document.getElementById("goalSummary").textContent =
+    `${minutes} of ${state.goal} focus minutes completed today`;
+  document.getElementById("goalFill").style.width = goalPercent + "%";
+  document.getElementById("goalFill2").style.width = goalPercent + "%";
+  document.getElementById("goalProgress").textContent = `${Math.round(goalPercent)}%`;
+
+  document.getElementById("levelName").textContent = `Level ${level}`;
+  document.getElementById("levelXP").textContent = `${levelXP} / 100 XP`;
+  document.getElementById("nextXP").textContent = `${100-levelXP} XP to next level`;
+  document.getElementById("levelFill").style.width = levelXP + "%";
+
+  document.getElementById("goalInput").value = state.goal;
+  document.getElementById("limitInput").value = state.limit;
+
+  document.getElementById("firstBadge").textContent = state.lifetimeSessions >= 1 ? "Unlocked ✓" : "Locked";
+  document.getElementById("goalBadge").textContent = minutes >= state.goal ? "Unlocked ✓" : "Locked";
+  document.getElementById("xpBadge").textContent = state.lifetimeXP >= 100 ? "Unlocked ✓" : "Locked";
+
+  document.getElementById("lifeFocus").textContent = formatTime(state.lifetimeSeconds);
+  document.getElementById("lifeSessions").textContent = state.lifetimeSessions;
+  document.getElementById("lifeXP").textContent = state.lifetimeXP;
+
+  const history = state.history.length
+    ? state.history.map(h => `<div class="goal-row">
+        <span><strong>${escapeHTML(h.task)}</strong><br>
+        <span class="muted small">${escapeHTML(h.at)} · ${h.minutes}m</span></span>
+        <strong>+${h.xp} XP</strong>
+      </div>`).join("")
+    : '<div class="empty">No completed sessions yet. Start your first one!</div>';
+
+  document.getElementById("recentSessions").innerHTML = history;
+}
+
+renderApps("appPreview");
+renderApps("allApps");
+render();
+updateTimer();
+</script>
+</body>
+</style>
+        </meta>
+    </head>
+</html>
