@@ -1,2 +1,2 @@
 # PocketPilot
-A productivity dashboard for focus, screen-time awareness, and personal progress.
+A smart personal finance dashboard to track income, manage expenses, set budgets, and reach savings goals.
